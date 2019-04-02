@@ -15,19 +15,6 @@ from airgun.widgets import (
     Search,
 )
 
-class Hosts_count(widget):
-    """Return total discoverd hosts count from Discovered Hoststype of
-    widgets"""
-    hosts_count = Text(".//a[@data-id='aid_discovered_hosts']")
-
-    def read(self):
-        """Return hosts count from widget. Usually it is a string like
-        'Total Hosts: 5'
-        """
-        # _, _, count = self.total_count.read().partition(':')
-        # return int(count)
-        return self.hosts_count.read()
-
 
 class ItemValueList(Widget):
     """List of name-value pairs. Each name element from every pair is clickable
@@ -116,8 +103,15 @@ class DashboardView(BaseLoggedInView):
     @View.nested
     class DiscoveredHosts(View):
         ROOT = ".//li[@data-name='Discovered Hosts']"
-        hosts = Table('.//table')
-        hosts_count = Hosts_count()
+        hosts = Table('.//table', column_widgets={'Host': Text('./a')})
+        hosts_count = Text(".//a[@data-id='aid_discovered_hosts']")
+        # host_name = Table('.//table', column_widgets={'Host': Text('./a')})
+
+        def fill(self, values):
+            if 'Host' not in values:
+                raise ValueError(
+                    'Host value has to be provided')
+            self.hosts.row()['Host'].widget.click()
 
     @View.nested
     class HostConfigurationStatus(View):
